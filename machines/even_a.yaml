@@ -1,0 +1,16 @@
+name: "even_a"
+description: "Çift sayıda 'a' içeren dizgileri kabul eder."
+
+states: [q_even, q_odd, q_accept]
+input_alphabet: ["a"]
+tape_alphabet: ["a", "B"]
+blank: "B"
+start_state: q_even
+accept_states: [q_accept]
+reject_states: []
+
+transitions:
+  - {state: q_even, read: "a", next: q_odd,    write: "a", move: R}
+  - {state: q_even, read: "B", next: q_accept, write: "B", move: R}
+  - {state: q_odd,  read: "a", next: q_even,   write: "a", move: R}
+  - {state: q_odd,  read: "B", next: q_odd,    write: "B", move: R}

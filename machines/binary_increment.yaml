@@ -1,0 +1,23 @@
+name: "binary_increment"
+description: "Binary sayıyı bir artırır. Örnek: 1011 -> 1100"
+
+states: [q_scan, q_carry, q_rewind, q_accept]
+input_alphabet: ["0", "1"]
+tape_alphabet: ["0", "1", "B"]
+blank: "B"
+start_state: q_scan
+accept_states: [q_accept]
+reject_states: []
+
+transitions:
+  - {state: q_scan,   read: "0", next: q_scan,   write: "0", move: R}
+  - {state: q_scan,   read: "1", next: q_scan,   write: "1", move: R}
+  - {state: q_scan,   read: "B", next: q_carry,  write: "B", move: L}
+
+  - {state: q_carry,  read: "1", next: q_carry,  write: "0", move: L}
+  - {state: q_carry,  read: "0", next: q_rewind, write: "1", move: R}
+  - {state: q_carry,  read: "B", next: q_accept, write: "1", move: R}
+
+  - {state: q_rewind, read: "0", next: q_rewind, write: "0", move: L}
+  - {state: q_rewind, read: "1", next: q_rewind, write: "1", move: L}
+  - {state: q_rewind, read: "B", next: q_accept, write: "B", move: R}

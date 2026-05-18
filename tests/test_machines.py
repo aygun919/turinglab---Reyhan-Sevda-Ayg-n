@@ -51,3 +51,30 @@ def test_unary_to_binary_wrong_symbol():
     result = tm("unary_to_binary.yaml").run("0", max_steps=100)
     assert result.accepted is False
     assert result.reason == "no_transition"
+# ===========================================================================
+# TM-2: Binary Karşılaştırma
+# ===========================================================================
+
+@pytest.mark.parametrize("inp, expected", [
+    ("1011#1010", True),   # 11 > 10 → kabul
+    ("1100#1011", True),   # 12 > 11 → kabul
+    ("1#0",       True),   # 1 > 0 → kabul
+    ("1010#1011", False),  # 10 < 11 → ret
+    ("1010#1010", False),  # 10 = 10 → ret
+])
+def test_binary_compare(inp, expected):
+    """binary_compare doğru kabul/ret kararı vermeli."""
+    result = tm("binary_compare.yaml").run(inp, max_steps=2000)
+    assert result.accepted is expected
+
+
+def test_binary_compare_zero():
+    """0 > 0 eşit olduğu için ret etmeli."""
+    result = tm("binary_compare.yaml").run("0#0", max_steps=500)
+    assert result.accepted is False
+
+
+def test_binary_compare_empty_reject():
+    """Sağ taraf yoksa no_transition veya reject olmalı."""
+    result = tm("binary_compare.yaml").run("1#0", max_steps=500)
+    assert result.accepted is True

@@ -1,0 +1,73 @@
+name: "binary_compare"
+description: "1011#1100 girdisinde birinci > ikinci ise kabul eder"
+
+# Strateji:
+#   Önce uzunlukları karşılaştır: kısa olan kesinlikle küçük.
+#   Eşit uzunluktaysa MSB'den sağa doğru bit bit karşılaştır.
+#   Her turda: sol sayının en soldaki bitini oku (X ile işaretle),
+#   sağ sayının karşılık gelen bitini bul ve karşılaştır.
+#   Sol bit > sağ bit -> q_accept
+#   Sol bit < sağ bit -> q_reject  
+#   Sol bit = sağ bit -> sonraki bite geç
+#   İkisi de bitti (eşit) -> q_reject
+
+states: [q_find_left, q_found0, q_found1,
+         q_skip_to_right, q_cmp0, q_cmp1,
+         q_next_round, q_rewind,
+         q_check_len_l, q_check_len_r,
+         q_accept, q_reject]
+
+input_alphabet: ["0", "1", "#"]
+tape_alphabet: ["0", "1", "#", "X", "Y", "B"]
+blank: "B"
+start_state: q_find_left
+accept_states: [q_accept]
+reject_states: [q_reject]
+
+transitions:
+  # q_find_left: sol sayıda işaretsiz bit ara
+  # X = işaretlenmiş bit, Y = sağ tarafta işaretlenmiş bit
+  - {state: q_find_left, read: "X", next: q_find_left, write: "X", move: R}
+  - {state: q_find_left, read: "0", next: q_found0,    write: "X", move: R}
+  - {state: q_find_left, read: "1", next: q_found1,    write: "X", move: R}
+  # '#'e ulaştık: sol bitti
+  - {state: q_find_left, read: "#", next: q_check_len_r, write: "#", move: R}
+
+  # q_found0: sol bit '0' idi, sağ tarafta karşılığı bul
+  - {state: q_found0, read: "0", next: q_found0,        write: "0", move: R}
+  - {state: q_found0, read: "1", next: q_found0,        write: "1", move: R}
+  - {state: q_found0, read: "X", next: q_found0,        write: "X", move: R}
+  - {state: q_found0, read: "#", next: q_cmp0,          write: "#", move: R}
+
+  # q_found1: sol bit '1' idi
+  - {state: q_found1, read: "0", next: q_found1,        write: "0", move: R}
+  - {state: q_found1, read: "1", next: q_found1,        write: "1", move: R}
+  - {state: q_found1, read: "X", next: q_found1,        write: "X", move: R}
+  - {state: q_found1, read: "#", next: q_cmp1,          write: "#", move: R}
+
+  # q_cmp0: sol=0, sağda işaretsiz bit ara
+  - {state: q_cmp0, read: "Y", next: q_cmp0,      write: "Y", move: R}
+  - {state: q_cmp0, read: "0", next: q_next_round, write: "Y", move: L}  # 0=0 devam
+  - {state: q_cmp0, read: "1", next: q_reject,     write: "1", move: R}  # 0<1 ret
+  - {state: q_cmp0, read: "B", next: q_reject,     write: "B", move: R}  # sağ bitti, sol uzun değil
+
+  # q_cmp1: sol=1, sağda işaretsiz bit ara
+  - {state: q_cmp1, read: "Y", next: q_cmp1,      write: "Y", move: R}
+  - {state: q_cmp1, read: "1", next: q_next_round, write: "Y", move: L}  # 1=1 devam
+  - {state: q_cmp1, read: "0", next: q_accept,     write: "0", move: R}  # 1>0 kabul
+  - {state: q_cmp1, read: "B", next: q_accept,     write: "B", move: R}  # sağ bitti, sol daha uzun
+
+  # q_next_round: başa dön
+  - {state: q_next_round, read: "Y", next: q_next_round, write: "Y", move: L}
+  - {state: q_next_round, read: "#", next: q_next_round, write: "#", move: L}
+  - {state: q_next_round, read: "0", next: q_next_round, write: "0", move: L}
+  - {state: q_next_round, read: "1", next: q_next_round, write: "1", move: L}
+  - {state: q_next_round, read: "X", next: q_next_round, write: "X", move: L}
+  - {state: q_next_round, read: "B", next: q_find_left,  write: "B", move: R}
+
+  # q_check_len_r: sol bitti, sağda bit var mı?
+  # Eğer sağda hala işaretsiz bit varsa -> sağ daha uzun -> sol daha küçük -> ret
+  - {state: q_check_len_r, read: "Y", next: q_check_len_r, write: "Y", move: R}
+  - {state: q_check_len_r, read: "0", next: q_reject,       write: "0", move: R}
+  - {state: q_check_len_r, read: "1", next: q_reject,       write: "1", move: R}
+  - {state: q_check_len_r, read: "B", next: q_reject,       write: "B", move: R}

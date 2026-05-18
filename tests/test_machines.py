@@ -78,3 +78,33 @@ def test_binary_compare_empty_reject():
     """Sağ taraf yoksa no_transition veya reject olmalı."""
     result = tm("binary_compare.yaml").run("1#0", max_steps=500)
     assert result.accepted is True
+# ===========================================================================
+# TM-3: Dizgi Kopyalayıcı
+# ===========================================================================
+
+@pytest.mark.parametrize("inp, expected", [
+    ("a",    "a#a"),
+    ("b",    "b#b"),
+    ("ab",   "ab#ab"),
+    ("abba", "abba#abba"),
+    ("ba",   "ba#ba"),
+])
+def test_string_copy_accept(inp, expected):
+    """string_copy doğru kopyayı üretmeli."""
+    result = tm("string_copy.yaml").run(inp, max_steps=10000)
+    assert result.accepted is True
+    assert result.final_tape.strip("B") == expected
+
+
+def test_string_copy_wrong_symbol():
+    """Yanlış sembol -> no_transition."""
+    result = tm("string_copy.yaml").run("1", max_steps=100)
+    assert result.accepted is False
+    assert result.reason == "no_transition"
+
+
+def test_string_copy_single_a():
+    """Tek 'a' -> 'a#a' olmalı."""
+    result = tm("string_copy.yaml").run("a", max_steps=1000)
+    assert result.accepted is True
+    assert result.final_tape.strip("B") == "a#a"    

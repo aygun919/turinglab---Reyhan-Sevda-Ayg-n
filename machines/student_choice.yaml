@@ -1,0 +1,44 @@
+name: "student_choice"
+description: "Parantez denge kontrolü. Örnek: (()()) kabul, (() ret"
+
+# Strateji:
+#   Her turda şeritte '(' hemen ardından ')' gelen çifti bul.
+#   İkisini de X ile işaretle (sil).
+#   Hiç çift kalmazsa:
+#     - Şerit tamamen X ise -> kabul
+#     - Hala ( veya ) varsa -> ret
+
+states: [q_find, q_found_open,
+         q_mark_close, q_rewind,
+         q_check, q_accept, q_reject]
+
+input_alphabet: ["(", ")"]
+tape_alphabet: ["(", ")", "X", "B"]
+blank: "B"
+start_state: q_find
+accept_states: [q_accept]
+reject_states: [q_reject]
+
+transitions:
+  # q_find: '(' ara, X'leri atla
+  - {state: q_find, read: "X", next: q_find,       write: "X", move: R}
+  - {state: q_find, read: "(", next: q_found_open, write: "X", move: R}
+  - {state: q_find, read: ")", next: q_reject,     write: ")", move: R}
+  - {state: q_find, read: "B", next: q_check,      write: "B", move: L}
+
+  # q_found_open: '(' bulundu, hemen ')' ara
+  - {state: q_found_open, read: "X",   next: q_found_open, write: "X", move: R}
+  - {state: q_found_open, read: "(",   next: q_found_open, write: "(", move: R}
+  - {state: q_found_open, read: ")",   next: q_mark_close, write: "X", move: L}
+  - {state: q_found_open, read: "B",   next: q_reject,     write: "B", move: R}
+
+  # q_mark_close: eşleşme bulundu, başa dön
+  - {state: q_mark_close, read: "X",   next: q_mark_close, write: "X", move: L}
+  - {state: q_mark_close, read: "(",   next: q_mark_close, write: "(", move: L}
+  - {state: q_mark_close, read: "B",   next: q_find,       write: "B", move: R}
+
+  # q_check: şerit bitti, X dışında bir şey var mı?
+  - {state: q_check, read: "X", next: q_check,  write: "X", move: L}
+  - {state: q_check, read: "(",  next: q_reject, write: "(", move: L}
+  - {state: q_check, read: ")",  next: q_reject, write: ")", move: L}
+  - {state: q_check, read: "B",  next: q_accept, write: "B", move: R}

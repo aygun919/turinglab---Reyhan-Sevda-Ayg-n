@@ -107,4 +107,31 @@ def test_string_copy_single_a():
     """Tek 'a' -> 'a#a' olmalı."""
     result = tm("string_copy.yaml").run("a", max_steps=1000)
     assert result.accepted is True
-    assert result.final_tape.strip("B") == "a#a"    
+    assert result.final_tape.strip("B") == "a#a"
+# ===========================================================================
+# TM-4: Parantez Denge Kontrolü
+# ===========================================================================
+
+@pytest.mark.parametrize("inp, expected", [
+    ("()",     True),   # basit çift
+    ("(())",   True),   # iç içe
+    ("(()())", True),   # karma
+    ("((",     False),  # açık kaldı
+    (")",      False),  # sadece kapanış
+])
+def test_student_choice_parametric(inp, expected):
+    """Parantez denge kontrolü doğru karar vermeli."""
+    result = tm("student_choice.yaml").run(inp, max_steps=1000)
+    assert result.accepted is expected
+
+
+def test_student_choice_empty():
+    """Boş girdi kabul edilmeli."""
+    result = tm("student_choice.yaml").run("", max_steps=100)
+    assert result.accepted is True
+
+
+def test_student_choice_wrong_order():
+    """Ters sıra -> ret."""
+    result = tm("student_choice.yaml").run(")(", max_steps=100)
+    assert result.accepted is False       

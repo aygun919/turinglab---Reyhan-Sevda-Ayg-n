@@ -1,0 +1,69 @@
+name: "string_copy"
+description: "Dizgiyi kopyalar. Örnek: abba -> abba#abba"
+
+# Strateji:
+#   Her turda soldaki işaretsiz harfi Q(a) veya W(b) ile işaretle,
+#   '#'in sağına kopyala, başa dön tekrarla.
+#   Sol tarafta '#'e ulaşınca bitti: Q->a, W->b geri yaz, accept.
+
+states: [q_find, q_founda, q_foundb,
+         q_go_end_a, q_go_end_b,
+         q_rewind, q_restore, q_accept]
+
+input_alphabet: ["a", "b"]
+tape_alphabet: ["a", "b", "#", "Q", "W", "B"]
+blank: "B"
+start_state: q_find
+accept_states: [q_accept]
+reject_states: []
+
+transitions:
+  # q_find: işaretsiz harf ara
+  - {state: q_find, read: "Q", next: q_find,    write: "Q", move: R}
+  - {state: q_find, read: "W", next: q_find,    write: "W", move: R}
+  - {state: q_find, read: "a", next: q_founda,  write: "Q", move: R}
+  - {state: q_find, read: "b", next: q_foundb,  write: "W", move: R}
+  # Sol taraf bitti (B veya # gördük): restore yap
+  - {state: q_find, read: "B", next: q_restore, write: "B", move: L}
+  - {state: q_find, read: "#", next: q_restore, write: "#", move: L}
+
+  # q_founda: '#'e veya B'ye git (# yoksa ekle), sonra sağ sona 'a' yaz
+  - {state: q_founda, read: "a", next: q_founda,   write: "a", move: R}
+  - {state: q_founda, read: "b", next: q_founda,   write: "b", move: R}
+  - {state: q_founda, read: "Q", next: q_founda,   write: "Q", move: R}
+  - {state: q_founda, read: "W", next: q_founda,   write: "W", move: R}
+  - {state: q_founda, read: "#", next: q_go_end_a, write: "#", move: R}
+  - {state: q_founda, read: "B", next: q_go_end_a, write: "#", move: R}
+
+  # q_foundb: '#'e git, sağ sona 'b' yaz
+  - {state: q_foundb, read: "a", next: q_foundb,   write: "a", move: R}
+  - {state: q_foundb, read: "b", next: q_foundb,   write: "b", move: R}
+  - {state: q_foundb, read: "Q", next: q_foundb,   write: "Q", move: R}
+  - {state: q_foundb, read: "W", next: q_foundb,   write: "W", move: R}
+  - {state: q_foundb, read: "#", next: q_go_end_b, write: "#", move: R}
+  - {state: q_foundb, read: "B", next: q_go_end_b, write: "#", move: R}
+
+  # q_go_end_a: sağ sonuna git, 'a' yaz
+  - {state: q_go_end_a, read: "a", next: q_go_end_a, write: "a", move: R}
+  - {state: q_go_end_a, read: "b", next: q_go_end_a, write: "b", move: R}
+  - {state: q_go_end_a, read: "B", next: q_rewind,   write: "a", move: L}
+
+  # q_go_end_b: sağ sonuna git, 'b' yaz
+  - {state: q_go_end_b, read: "a", next: q_go_end_b, write: "a", move: R}
+  - {state: q_go_end_b, read: "b", next: q_go_end_b, write: "b", move: R}
+  - {state: q_go_end_b, read: "B", next: q_rewind,   write: "b", move: L}
+
+  # q_rewind: başa dön
+  - {state: q_rewind, read: "a", next: q_rewind, write: "a", move: L}
+  - {state: q_rewind, read: "b", next: q_rewind, write: "b", move: L}
+  - {state: q_rewind, read: "Q", next: q_rewind, write: "Q", move: L}
+  - {state: q_rewind, read: "W", next: q_rewind, write: "W", move: L}
+  - {state: q_rewind, read: "#", next: q_rewind, write: "#", move: L}
+  - {state: q_rewind, read: "B", next: q_find,   write: "B", move: R}
+
+  # q_restore: Q->a, W->b geri yaz, sonra accept
+  - {state: q_restore, read: "Q", next: q_restore, write: "a", move: L}
+  - {state: q_restore, read: "W", next: q_restore, write: "b", move: L}
+  - {state: q_restore, read: "a", next: q_restore, write: "a", move: L}
+  - {state: q_restore, read: "b", next: q_restore, write: "b", move: L}
+  - {state: q_restore, read: "B", next: q_accept,  write: "B", move: R}

@@ -1,0 +1,26 @@
+name: "ntm_contains_01"
+description: "Icinde '01' alt dizgisi gecen dizileri kabul eder"
+
+# Strateji (Non-deterministic):
+#   Her pozisyonda non-deterministik olarak '01' basliyor mu diye tahmin et.
+#   q0: her karakterde ya devam et ya da '0' gorununce q1'e gec (tahmin)
+#   q1: '1' gorununce kabul et
+#   Bu NTM'in gucu: dogru pozisyonu "tahmin eder"
+
+states: [q0, q1, q_accept]
+input_alphabet: ["0", "1"]
+tape_alphabet: ["0", "1", "B"]
+blank: "B"
+start_state: q0
+accept_states: [q_accept]
+reject_states: []
+
+transitions:
+  # q0: her karakteri atla VEYA '0' gorununce tahmin yap
+  - {state: q0, read: "0", next: q0,       write: "0", move: R}
+  - {state: q0, read: "1", next: q0,       write: "1", move: R}
+  - {state: q0, read: "0", next: q1,       write: "0", move: R}
+  - {state: q0, read: "B", next: q0,       write: "B", move: R}
+
+  # q1: '1' gorununce kabul
+  - {state: q1, read: "1", next: q_accept, write: "1", move: R}

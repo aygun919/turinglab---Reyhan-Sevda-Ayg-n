@@ -1,0 +1,40 @@
+name: "multi_tape_palindrome"
+description: "2 seritli TM ile palindrom testi. Ornek: abba kabul, ab ret"
+
+num_tapes: 2
+
+states: [q_copy, q_rewind1, q_cmp, q_accept, q_reject]
+
+input_alphabet: ["a", "b"]
+tape_alphabet: ["a", "b", "B"]
+blank: "B"
+start_state: q_copy
+accept_states: [q_accept]
+reject_states: [q_reject]
+
+transitions:
+  # Asama 1: Serit1'i Serit2'ye kopyala, her ikisi de saga gider
+  - {state: q_copy, read: ["a", "B"], next: q_copy,    write: ["a", "a"], move: [R, R]}
+  - {state: q_copy, read: ["b", "B"], next: q_copy,    write: ["b", "b"], move: [R, R]}
+  # Kopya bitti: Serit1 sola, Serit2 sola (ikisi son harfte)
+  - {state: q_copy, read: ["B", "B"], next: q_rewind1, write: ["B", "B"], move: [L, L]}
+
+  # Asama 2: Sadece Serit1 basa doner, Serit2 yerinde kalir
+  - {state: q_rewind1, read: ["a", "a"], next: q_rewind1, write: ["a", "a"], move: [L, S]}
+  - {state: q_rewind1, read: ["a", "b"], next: q_rewind1, write: ["a", "b"], move: [L, S]}
+  - {state: q_rewind1, read: ["b", "a"], next: q_rewind1, write: ["b", "a"], move: [L, S]}
+  - {state: q_rewind1, read: ["b", "b"], next: q_rewind1, write: ["b", "b"], move: [L, S]}
+  - {state: q_rewind1, read: ["B", "a"], next: q_cmp,     write: ["B", "a"], move: [R, S]}
+  - {state: q_rewind1, read: ["B", "b"], next: q_cmp,     write: ["B", "b"], move: [R, S]}
+  - {state: q_rewind1, read: ["B", "B"], next: q_accept,  write: ["B", "B"], move: [R, R]}
+
+  # Asama 3: Serit1 soldan saga, Serit2 sagdan sola karsilastir
+  - {state: q_cmp, read: ["a", "a"], next: q_cmp,    write: ["a", "a"], move: [R, L]}
+  - {state: q_cmp, read: ["b", "b"], next: q_cmp,    write: ["b", "b"], move: [R, L]}
+  - {state: q_cmp, read: ["a", "b"], next: q_reject, write: ["a", "b"], move: [R, L]}
+  - {state: q_cmp, read: ["b", "a"], next: q_reject, write: ["b", "a"], move: [R, L]}
+  - {state: q_cmp, read: ["B", "B"], next: q_accept, write: ["B", "B"], move: [R, R]}
+  - {state: q_cmp, read: ["B", "a"], next: q_accept, write: ["B", "a"], move: [R, R]}
+  - {state: q_cmp, read: ["B", "b"], next: q_accept, write: ["B", "b"], move: [R, R]}
+  - {state: q_cmp, read: ["a", "B"], next: q_accept, write: ["a", "B"], move: [R, R]}
+  - {state: q_cmp, read: ["b", "B"], next: q_accept, write: ["b", "B"], move: [R, R]}

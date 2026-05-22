@@ -3,6 +3,7 @@
 **Öğrenci:** [Reyhan Sevda Aygün]  
 **Ders:** Hesaplama Kuramı  
 **Tarih:** 20 Mayıs 2026
+**[TuringLab Demo Videosunu Buradan İzleyebilirsiniz](https://youtu.be/PS0PzaSyg_U)**
 
 ---
 

@@ -12,3 +12,4 @@ reject_states: []
 transitions:
   - {state: q0, read: "1", next: q0,       write: "1", move: R}
   - {state: q0, read: "B", next: q_accept, write: "1", move: R}
+  

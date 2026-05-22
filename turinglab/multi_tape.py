@@ -138,14 +138,15 @@ class MultiTapeTM:
 
             next_state, writes, moves = self._transitions[key]
 
-            for i, (tape, write, move, head) in enumerate(
-                zip(tapes, writes, moves, heads)
+            for i, (tape, write, move) in enumerate(
+                zip(tapes, writes, moves)
             ):
-                tape.write(head, write)
+                tape.write(heads[i], write)
                 if move == "R":
                     heads[i] += 1
                 elif move == "L":
                     heads[i] -= 1
+                # "S" ise kafa yerinde kalir
 
             current_state = next_state
             history.append(snapshot())
